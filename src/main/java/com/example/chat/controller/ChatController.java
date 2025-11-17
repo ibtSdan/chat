@@ -14,7 +14,7 @@ public class ChatController {
 
     @MessageMapping("/chat/send")
     public void sendMessage(ChatMessageDto dto){
-        String destination = "/topic/chat"+dto.getRoomId();
+        String destination = "/topic/chat/"+dto.getRoomId();
         messagingTemplate.convertAndSend(destination, dto);
     }
 }
