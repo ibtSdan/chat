@@ -20,7 +20,7 @@ document.getElementById("connectBtn").addEventListener("click", () => {
     }
     currentRoom = room;
 
-    const socket = new SockJS("/ws/chat"); // 서버에서 등록한 endpoint
+    const socket = new SockJS(`/ws/chat?roomId=` + currentRoom);
     stompClient = Stomp.over(socket);
     stompClient.debug = () => {};
 

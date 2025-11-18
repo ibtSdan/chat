@@ -1,5 +1,6 @@
 package com.example.chat.config;
 
+import com.example.chat.interceptor.RoomIdInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
@@ -13,6 +14,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws/chat")
+                .addInterceptors(new RoomIdInterceptor())
                 .setAllowedOrigins("http://localhost:8080")
                 .withSockJS();
     }
