@@ -8,21 +8,32 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
 
 import java.net.URI;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 
 public class RoomIdInterceptor implements HandshakeInterceptor {
+
+    private static final Map<Long, Integer> roomUserCount = new ConcurrentHashMap<>();
+
+    private static final int MAX_USER = 2;
+
     @Override
     public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Map<String, Object> attributes) throws Exception {
         URI uri = request.getURI();
         String query = uri.getQuery();
+        Long roomId = Long.valueOf(query.split("=")[1]);
 
-        if (query != null && query.startsWith("roomId=")) {
-            Long roomId = Long.valueOf(query.split("=")[1]);
+        int current = roomUserCount.getOrDefault(roomId, 0);
 
-            attributes.put("roomId", roomId);
-            log.info("입장 roomId >> " + roomId);
+        if (current >= MAX_USER) {
+            log.warn("방이 가득 찼습니다. roomId={}, current={}", roomId, current);
+            return false;
         }
+
+        roomUserCount.put(roomId, current+1);
+        attributes.put("roomId", roomId);
+        log.info("사용자 입장: roomId={}, current={}", roomId, roomUserCount.get(roomId));
 
         return true;
     }
@@ -30,5 +41,10 @@ public class RoomIdInterceptor implements HandshakeInterceptor {
     @Override
     public void afterHandshake(ServerHttpRequest request, ServerHttpResponse response, WebSocketHandler wsHandler, Exception exception) {
 
+    }
+
+    public static void decreaseUser(Long roomId){
+        roomUserCount.computeIfPresent(roomId, (id, count) -> count - 1);
+        log.info("사용자 퇴장: roomId={}, current={}", roomId, roomUserCount.get(roomId));
     }
 }
