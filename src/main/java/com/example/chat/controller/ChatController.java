@@ -15,6 +15,9 @@ public class ChatController {
 
     @MessageMapping("/chat/send")
     public void sendMessage(ChatMessageDto dto){
+        if (dto == null || dto.getRoomId() == null) {
+            return;
+        }
         ChatTask task = new ChatTask("/topic/chat/"+dto.getRoomId(), dto);
         chatOrderService.enqueue(dto.getRoomId(), task);
     }

@@ -1,12 +1,12 @@
 package com.example.chat.controller;
 
 import com.example.chat.dto.ChatMessageDto;
+import com.example.chat.websocket.ChatOrderService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 import static org.mockito.Mockito.*;
 
@@ -14,7 +14,7 @@ import static org.mockito.Mockito.*;
 public class ChatControllerTest {
 
     @Mock
-    private SimpMessagingTemplate messagingTemplate;
+    private ChatOrderService service;
 
     @InjectMocks
     private ChatController controller;
@@ -31,7 +31,7 @@ public class ChatControllerTest {
         controller.sendMessage(messageDto);
 
         // then
-        verify(messagingTemplate, times(1)).convertAndSend(anyString(), (Object) any());
+        verify(service, times(1)).enqueue(eq(1L), any());
     }
 
     @Test
@@ -40,11 +40,9 @@ public class ChatControllerTest {
         ChatMessageDto messageDto = null;
 
         // when
-        try {
-            controller.sendMessage(messageDto);
-        } catch (Exception ignored) {}
+        controller.sendMessage(messageDto);
 
         // then
-        verify(messagingTemplate, never()).convertAndSend(anyString(), (Object) any());
+        verify(service, never()).enqueue(anyLong(), any());
     }
 }
