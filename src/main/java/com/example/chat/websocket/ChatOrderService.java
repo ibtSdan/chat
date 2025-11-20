@@ -22,11 +22,11 @@ public class ChatOrderService {
 
     private void startWorkerIfNeeded(Long roomId, RoomState state) {
         if (state.getWorkerRunning().compareAndSet(false, true)) {
-            workerPool.submit(() -> runWorker(roomId, state));
+            workerPool.submit(() -> runWorker(state));
         }
     }
 
-    private void runWorker(Long roomId, RoomState state) {
+    private void runWorker(RoomState state) {
         BlockingQueue<ChatTask> queue = state.getQueue();
 
         try {
