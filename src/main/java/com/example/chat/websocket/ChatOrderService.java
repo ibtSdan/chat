@@ -5,39 +5,47 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 @RequiredArgsConstructor
 public class ChatOrderService {
     private final SimpMessagingTemplate messagingTemplate;
-    private final ConcurrentMap<Long, BlockingQueue<ChatTask>> roomQueues = new ConcurrentHashMap<>();
-    private final ConcurrentMap<Long, AtomicBoolean> workerRunning = new ConcurrentHashMap<>();
-    private final ExecutorService executorService = Executors.newCachedThreadPool();
+    private final ConcurrentMap<Long, RoomState> roomStates = new ConcurrentHashMap<>();
+    private final ExecutorService workerPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2);
+    private static final long IDLE_TIMEOUT_MS = 10_000;
 
     public void enqueue(Long roomId, ChatTask task) {
-        BlockingQueue<ChatTask> q = roomQueues.computeIfAbsent(roomId, id -> new LinkedBlockingQueue<>());
-        q.add(task);
-
-        workerRunning.computeIfAbsent(roomId, id -> new AtomicBoolean(false));
-        startWorkerIfNeeded(roomId, q);
+        RoomState state = roomStates.computeIfAbsent(roomId, id -> new RoomState());
+        state.getQueue().add(task);
+        startWorkerIfNeeded(roomId, state);
     }
 
-    private void startWorkerIfNeeded(Long roomId, BlockingQueue<ChatTask> q) {
-        AtomicBoolean running = workerRunning.get(roomId);
-        if (running.compareAndSet(false, true)) {
-            executorService.submit(() -> {
-                try {
-                    while (true) {
-                        ChatTask task = q.take();
-                        messagingTemplate.convertAndSend(task.getDestination(), task.getMessage());
+    private void startWorkerIfNeeded(Long roomId, RoomState state) {
+        if (state.getWorkerRunning().compareAndSet(false, true)) {
+            workerPool.submit(() -> runWorker(roomId, state));
+        }
+    }
+
+    private void runWorker(Long roomId, RoomState state) {
+        BlockingQueue<ChatTask> queue = state.getQueue();
+
+        try {
+            while (true) {
+                ChatTask task = queue.poll();
+                if (task != null) {
+                    messagingTemplate.convertAndSend(task.getDestination(), task.getMessage());
+                } else {
+                    Thread.sleep(IDLE_TIMEOUT_MS);
+                    if (queue.isEmpty()) {
+                        state.getWorkerRunning().set(false);
+                        break;
                     }
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                } finally {
-                    running.set(false);
                 }
-            });
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } finally {
+            state.getWorkerRunning().set(false);
         }
     }
 }
