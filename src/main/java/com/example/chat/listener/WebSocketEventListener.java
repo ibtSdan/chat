@@ -1,7 +1,6 @@
 package com.example.chat.listener;
 
 import com.example.chat.interceptor.RoomIdInterceptor;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
@@ -9,7 +8,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 @Component
-@RequiredArgsConstructor
 @Slf4j
 public class WebSocketEventListener {
 
@@ -20,6 +18,8 @@ public class WebSocketEventListener {
 
         if (roomId != null) {
             RoomIdInterceptor.decreaseUser(roomId);
+        } else {
+            log.debug("roomId 없는 세션 종료");
         }
     }
 }
