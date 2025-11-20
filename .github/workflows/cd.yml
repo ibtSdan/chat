@@ -1,0 +1,44 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install SSH key
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.EC2_KEY }}
+
+      - name: Add known hosts
+        run: |
+          ssh-keyscan -p ${{ secrets.EC2_PORT }} ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to EC2
+        run: |
+          ssh -p ${{ secrets.EC2_PORT }} ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+          
+            cd ~/app/chat
+
+            echo "Pulling latest code..."
+            git pull origin main
+
+            echo "Building project..."
+            ./gradlew build
+
+            echo "Stopping old application..."
+            pkill -f 'java -jar' || true
+
+            echo "Starting new application..."
+            nohup java -jar build/libs/*.jar > app.log 2>&1 &
+
+            echo "Deployment complete!"
+          EOF
