@@ -1,6 +1,6 @@
 package com.example.chat.config;
 
-import com.example.chat.interceptor.RoomIdInterceptor;
+import com.example.chat.websocket.RoomIdInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;

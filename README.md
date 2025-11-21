@@ -42,7 +42,7 @@ src
          ├── dto           // 메시지 데이터 구조
          └── websocket     // 실시간 채팅 핵심 로직
               ├── service
-              ├── state
               ├── interceptor
+              ├── state
               └── listener
 ```

@@ -1,12 +1,11 @@
 package com.example.chat.interceptor;
 
-import org.assertj.core.api.Assertions;
+import com.example.chat.websocket.RoomIdInterceptor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
-import org.springframework.web.servlet.function.ServerResponse;
 import org.springframework.web.socket.WebSocketHandler;
 
 import java.net.URI;

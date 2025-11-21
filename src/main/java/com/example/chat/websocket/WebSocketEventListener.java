@@ -1,6 +1,5 @@
-package com.example.chat.listener;
+package com.example.chat.websocket;
 
-import com.example.chat.interceptor.RoomIdInterceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
