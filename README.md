@@ -1,4 +1,7 @@
 ## 프로젝트 소개
+<img width="809" height="506" alt="image" src="https://github.com/user-attachments/assets/e787aabe-9970-4a21-9368-913438a9e1f5" />
+
+
 Chat 프로젝트는 **WebSocket(STOMP)** 을 활용한 실시간 채팅 프로젝트 입니다.
 
 사용자가 채팅방에 접속해 메시지를 주고받는 기본 기능을 구현했으며, 채팅방의 **최대 인원 제한 기능**을 적용해 정해진 인원을 넘으면 입장이 불가능하도록 처리했습니다.
